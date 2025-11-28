@@ -7,7 +7,7 @@ def calculate_meds():
     
     st.title("🐾 OPA Meds Calculator")
     st.markdown("### Protocol & Litter Calculator")
-    st.info("Enter weights in **lbs**. For a litter, separate weights with commas (e.g., `2.5, 3.0, 4.2`).")
+    st.info("Enter weights in **lbs**. For a litter, separate weights with commas (e.g., `2.5, 3.0, 4.2`) or list them on separate lines.")
 
     # 1. Input: Weights (Text Area to allow multiple)
     weights_input = st.text_area("Enter Animal Weight(s) in lbs:", placeholder="e.g. 10.5 or 2.5, 3.0, 2.8")
@@ -29,15 +29,19 @@ def calculate_meds():
     def parse_weights(input_str):
         weights = []
         if input_str:
-            # Replace newlines with commas, split by comma
+            # Replace newlines with commas, split by comma, and remove extra whitespace
             raw_list = input_str.replace('\n', ',').split(',')
             for w in raw_list:
-                try:
-                    val = float(w.strip())
-                    if val > 0:
-                        weights.append(val)
-                except ValueError:
-                    pass
+                # Use strip() to handle spaces around numbers
+                clean_w = w.strip()
+                if clean_w: # Check if string is not empty
+                    try:
+                        val = float(clean_w)
+                        if val > 0:
+                            weights.append(val)
+                    except ValueError:
+                        # Ignore any text or non-numeric entries
+                        pass
         return weights
 
     # 3. Logic & Calculations
@@ -119,7 +123,6 @@ def calculate_meds():
         for i, weight_lbs in enumerate(weights_list):
             
             # --- CONVERSIONS & CALCULATIONS ---
-            # Convert pounds to kilograms
             weight_kg = weight_lbs / 2.20462
             
             # 1. Dose needed in mg per administration
@@ -131,4 +134,55 @@ def calculate_meds():
             dose_mL_per_admin = dose_mg_per_admin / concentration_mg_per_mL
             
             # 3. Total volume needed for the entire protocol for this animal
-            total_mL_per
+            total_mL_per_animal = dose_mL_per_admin * total_doses
+            
+            # 4. Summing totals for all animals
+            grand_total_mL_needed += total_mL_per_animal
+
+            # --- PREPARE RESULTS ROW ---
+            results_data.append({
+                "Animal #": i + 1,
+                "Weight (lbs)": f"{weight_lbs:.1f}",
+                "Weight (kg)": f"{weight_kg:.2f}",
+                "Dose (mg)": f"{dose_mg_per_admin:.1f}",
+                "**mL per Dose**": f"**{dose_mL_per_admin:.3f}**",
+                "Total mL (Protocol)": f"{total_mL_per_animal:.2f}",
+            })
+
+        # --- DISPLAY RESULTS ---
+        results_df = pd.DataFrame(results_data)
+        
+        st.subheader("Dosage Results")
+        # Format the table for better display
+        st.dataframe(
+            results_df,
+            hide_index=True,
+            use_container_width=True
+        )
+
+        st.markdown("---")
+        
+        # --- GRAND TOTAL SUMMARY ---
+        if len(weights_list) > 1:
+            st.metric(
+                label=f"**Grand Total Protocol Volume (for {len(weights_list)} animals)**", 
+                value=f"{grand_total_mL_needed:.2f} mL"
+            )
+            st.caption(f"This is the total volume of medication ({drug_name}) needed to treat all animals for the full {duration_days}-day protocol.")
+            
+        else:
+             st.metric(
+                label=f"**Total Protocol Volume Needed**", 
+                value=f"{grand_total_mL_needed:.2f} mL"
+            )
+            
+    # --- ERROR HANDLING ---
+    elif len(weights_list) == 0 and weights_input and selection != "Select a medication...":
+         st.warning("Please ensure weights are entered correctly (positive numbers separated by commas).")
+         
+    elif len(weights_list) > 0 and selection == "Select a medication...":
+        st.warning("Please select a medication from the dropdown menu.")
+        
+    # Run the app function if the file is executed directly
+if __name__ == "__main__":
+    calculate_meds()
