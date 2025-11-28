@@ -1,15 +1,15 @@
 import streamlit as st
+import pandas as pd
 
 def calculate_meds():
-    # Page setup
     st.set_page_config(page_title="OPA Meds Calculator", page_icon="🐾")
     
     st.title("🐾 OPA Meds Calculator")
-    st.markdown("### Enter the weight in **lbs** to see the protocol.")
+    st.markdown("### Protocol & Litter Calculator")
+    st.info("Enter weights in **lbs**. For a litter, separate weights with commas (e.g., `2.5, 3.0, 4.2`).")
 
-    # 1. Input: Weight
-    # We use step=0.1 so you can enter decimal weights (e.g. 10.5 lbs)
-    weight_lbs = st.number_input("Animal Weight (lbs)", min_value=0.0, step=0.1, format="%.1f")
+    # 1. Input: Weights (Text Area to allow multiple)
+    weights_input = st.text_area("Enter Animal Weight(s) in lbs:", placeholder="e.g. 10.5 or 2.5, 3.0, 2.8")
 
     # 2. Input: Medication Options
     med_options = [
@@ -24,96 +24,38 @@ def calculate_meds():
     
     selection = st.selectbox("Select Medication & Indication", med_options)
 
+    # Helper function to clean and parse weights
+    def parse_weights(input_str):
+        weights = []
+        if input_str:
+            # Replace newlines with commas, split by comma
+            raw_list = input_str.replace('\n', ',').split(',')
+            for w in raw_list:
+                try:
+                    val = float(w.strip())
+                    if val > 0:
+                        weights.append(val)
+                except ValueError:
+                    pass
+        return weights
+
     # 3. Logic & Calculations
-    if weight_lbs > 0 and selection != "Select a medication...":
-        
-        # Calculate Weight in KG for meds that use it
-        weight_kg = weight_lbs / 2.20462
+    weights_list = parse_weights(weights_input)
+
+    if len(weights_list) > 0 and selection != "Select a medication...":
         
         st.divider()
-        st.subheader(f"Results for {weight_lbs} lbs ({weight_kg:.2f} kg)")
+        st.subheader(f"Protocol: {selection}")
+        
+        results_data = []
+        grand_total_needed = 0
+        unit = "mg" # Default unit
 
-        # --- PROTOCOLS ---
-
-        # 1. Panacur
-        # Dose: 1ml per 4lbs | Frequency: Once a day | Duration: 5 days
-        if selection == "Panacur (General Parasites)":
-            daily_dose_ml = weight_lbs / 4
-            duration = 5
-            total_needed = daily_dose_ml * duration
+        # --- PROCESS EACH ANIMAL ---
+        for weight_lbs in weights_list:
+            weight_kg = weight_lbs / 2.20462
             
-            st.info(f"**Medication:** Panacur (Fenbendazole)")
-            st.success(f"**Daily Dose:** Give {daily_dose_ml:.2f} ml once a day")
-            st.warning(f"**Duration:** {duration} days")
-            st.write(f"**Total Volume Needed:** {total_needed:.2f} ml")
-
-        # 2. Toltrazuril
-        # Dose: 1ml per 10lbs | Frequency: Once a day | Duration: 3 days
-        elif selection == "Toltrazuril (Coccidia)":
-            daily_dose_ml = weight_lbs / 10
-            duration = 3
-            total_needed = daily_dose_ml * duration
-            
-            st.info(f"**Medication:** Toltrazuril")
-            st.success(f"**Daily Dose:** Give {daily_dose_ml:.2f} ml once a day")
-            st.warning(f"**Duration:** {duration} days")
-            st.write(f"**Total Volume Needed:** {total_needed:.2f} ml")
-
-        # 3. Doxycycline (URI)
-        # Dose: 2.5mg per 1lb | Frequency: 2x a day | Duration: 10 days
-        elif selection == "Doxycycline (URI)":
-            dose_mg = 2.5 * weight_lbs
-            duration = 10
-            frequency = 2
-            total_mg = dose_mg * frequency * duration
-            
-            st.info(f"**Medication:** Doxycycline (URI Protocol)")
-            st.success(f"**Per Dose:** Give {dose_mg:.0f} mg")
-            st.write(f"*Frequency: {frequency} times a day (BID)*")
-            st.warning(f"**Duration:** {duration} days")
-            st.write(f"**Total Meds Needed:** {total_mg:.0f} mg total")
-
-        # 4. Doxycycline (Heartworm)
-        # Dose: 10mg per kg | Frequency: 2x a day | Duration: 30 days
-        elif selection == "Doxycycline (Heartworm)":
-            dose_mg = 10 * weight_kg
-            duration = 30
-            frequency = 2
-            total_mg = dose_mg * frequency * duration
-            
-            st.info(f"**Medication:** Doxycycline (Heartworm Protocol)")
-            st.success(f"**Per Dose:** Give {dose_mg:.0f} mg")
-            st.write(f"*Frequency: {frequency} times a day (BID)*")
-            st.warning(f"**Duration:** {duration} days")
-            st.write(f"**Total Meds Needed:** {total_mg:.0f} mg total")
-
-        # 5. Metronidazole (Diarrhea)
-        # Dose: 10mg per kg | Frequency: 2x a day | Duration: 5 days
-        elif selection == "Metronidazole (Diarrhea)":
-            dose_mg = 10 * weight_kg
-            duration = 5
-            frequency = 2
-            total_mg = dose_mg * frequency * duration
-            
-            st.info(f"**Medication:** Metronidazole (General Diarrhea)")
-            st.success(f"**Per Dose:** Give {dose_mg:.0f} mg")
-            st.write(f"*Frequency: {frequency} times a day (BID)*")
-            st.warning(f"**Duration:** {duration} days")
-            st.write(f"**Total Meds Needed:** {total_mg:.0f} mg total")
-
-        # 6. Metronidazole (Giardia)
-        # Dose: 25mg per kg | Frequency: 2x a day | Duration: 5 days
-        elif selection == "Metronidazole (Giardia)":
-            dose_mg = 25 * weight_kg
-            duration = 5
-            frequency = 2
-            total_mg = dose_mg * frequency * duration
-            
-            st.info(f"**Medication:** Metronidazole (Giardia Protocol)")
-            st.success(f"**Per Dose:** Give {dose_mg:.0f} mg")
-            st.write(f"*Frequency: {frequency} times a day (BID)*")
-            st.warning(f"**Duration:** {duration} days")
-            st.write(f"**Total Meds Needed:** {total_mg:.0f} mg total")
-
-if __name__ == "__main__":
-    calculate_meds()
+            dose_per_admin = 0
+            frequency_str = ""
+            duration_days = 0
+            total_per_animal = 0
