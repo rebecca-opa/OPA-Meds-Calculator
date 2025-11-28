@@ -57,14 +57,15 @@ def calculate_meds():
         frequency_str = ""
         duration_days = 0
         notes = ""
+        drug_name = selection.split(" ")[0]
 
         # --- MEDICATION PROTOCOLS ---
         if selection == "Panacur (General Parasites)":
             rate_mg_per_kg = 50.0 
             concentration_mg_per_mL = 100.0 # 100 mg/mL suspension
             frequency_str = "SID (Once Daily)"
-            duration_days = 3
-            notes = "Commonly called Fenbendazole. Give SID for 3 days."
+            duration_days = 5 # Corrected to 5 days
+            notes = "Commonly called Fenbendazole. Give SID for 5 days per OPA Protocol."
         
         elif selection == "Toltrazuril (Coccidia)":
             rate_mg_per_kg = 30.0 
@@ -100,8 +101,9 @@ def calculate_meds():
             frequency_str = "BID (Twice Daily)"
             duration_days = 5
             notes = "Give BID for 5 days. For confirmed Giardia infection."
-
-        st.markdown(f"**Dose Rate:** {rate_mg_per_kg:.1f} mg/kg | **Concentration:** {concentration_mg_per_mL:.1f} mg/mL | **Frequency:** {frequency_str} | **Duration:** {duration_days} days")
+        
+        # Display the protocol details used for calculations
+        st.markdown(f"**Drug:** {drug_name} | **Rate:** {rate_mg_per_kg:.1f} mg/kg | **Conc:** {concentration_mg_per_mL:.1f} mg/mL | **Freq:** {frequency_str} | **Duration:** {duration_days} days")
         st.caption(f"*{notes}*")
 
         # Determine doses per day based on frequency
@@ -119,11 +121,11 @@ def calculate_meds():
             # --- CONVERSIONS & CALCULATIONS ---
             weight_kg = weight_lbs / 2.20462
             
-            # 1. Total Dose needed in mg
+            # 1. Dose needed in mg per administration
             # Dose (mg) = Rate (mg/kg) * Weight (kg)
             dose_mg_per_admin = rate_mg_per_kg * weight_kg
             
-            # 2. Volume to Administer in mL
+            # 2. Volume to Administer in mL per administration
             # Volume (mL) = Dose (mg) / Concentration (mg/mL)
             dose_mL_per_admin = dose_mg_per_admin / concentration_mg_per_mL
             
@@ -146,6 +148,7 @@ def calculate_meds():
         # --- DISPLAY RESULTS ---
         results_df = pd.DataFrame(results_data)
         
+        st.subheader("Dosage Results")
         # Format the table for better display
         st.dataframe(
             results_df,
@@ -172,6 +175,9 @@ def calculate_meds():
     elif len(weights_list) == 0 and weights_input and selection != "Select a medication...":
          st.warning("Please ensure weights are entered correctly (positive numbers separated by commas).")
          
+    elif len(weights_list) > 0 and selection == "Select a medication...":
+        st.warning("Please select a medication from the dropdown menu.")
+        
     # Run the app function if the file is executed directly
 if __name__ == "__main__":
     calculate_meds()
