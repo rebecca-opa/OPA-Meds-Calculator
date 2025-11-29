@@ -5,8 +5,10 @@ import numpy as np
 # --- 1. PROTOCOL DEFINITIONS ---
 # Central dictionary for easy maintenance of all medication protocols
 PROTOCOLS = {
-    "Panacur (General Parasites)": {"rate": 50.0, "conc": 100.0, "freq": "SID (Once Daily)", "duration": 5, "notes": "Fenbendazole. Give SID for 5 days.", "force_liquid": True},
-    "Toltrazuril (Coccidia)": {"rate": 30.0, "conc": 50.0, "freq": "SID (Once Daily)", "duration": 3, "notes": "Give SID for 3 days. Needs to be compounded or sourced.", "force_liquid": True},
+    # UPDATED: Rate changed from 50.0 to 55.1 mg/kg (Equivalent to 1mL/4lbs of 100mg/mL solution)
+    "Panacur (General Parasites)": {"rate": 55.1, "conc": 100.0, "freq": "SID (Once Daily)", "duration": 5, "notes": "Fenbendazole. Give SID for 5 days.", "force_liquid": True},
+    # UPDATED: Rate changed from 30.0 to 11.0 mg/kg (Equivalent to 1mL/10lbs of 50mg/mL solution)
+    "Toltrazuril (Coccidia)": {"rate": 11.0, "conc": 50.0, "freq": "SID (Once Daily)", "duration": 3, "notes": "Give SID for 3 days. Needs to be compounded or sourced.", "force_liquid": True},
     "Doxycycline (URI)": {"rate": 5.0, "conc": 50.0, "freq": "BID (Twice Daily)", "duration": 10, "notes": "Give BID for 10 days."},
     "Doxycycline (Heartworm)": {"rate": 10.0, "conc": 50.0, "freq": "SID (Once Daily)", "duration": 30, "notes": "Give SID for 30 days as part of heartworm treatment."},
     "Metronidazole (Diarrhea)": {"rate": 15.0, "conc": 50.0, "freq": "BID (Twice Daily)", "duration": 5, "notes": "Give BID for 5 days. Use for non-specific diarrhea."},
