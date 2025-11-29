@@ -112,34 +112,27 @@ def calculate_meds():
             st.sidebar.markdown("---")
             st.sidebar.subheader(f"{drug_name} Options")
 
-            # Default Doxy to Tablet, Metro to Liquid
-            default_index = 1 if drug_name == "Doxycycline" else 0
-            
-            calc_type = st.sidebar.radio(
-                "Target Dosage Form:",
-                ['Liquid (mL)', 'Tablet (mg)'],
-                index=default_index,
-                key=f'{drug_name}_form',
-            )
+            # Set calculation type to Tablet as requested by the user to remove liquid option
+            calc_type = 'Tablet (mg)'
+            st.sidebar.caption(f"Dosage Form is fixed to: **Tablet (mg)**")
 
-            if calc_type == 'Tablet (mg)':
-                # Set options based on drug type
-                options = [0]
-                default_index = 0
-                if drug_name == "Doxycycline":
-                    options = [0, 100] # Fixed to 100mg as per user request
-                    default_index = 1
-                elif drug_name == "Metronidazole":
-                    options = [0, 250, 500]
-                    default_index = 1 # Defaulting to 250mg 
-                    
-                tablet_strength_mg = st.sidebar.selectbox(
-                    "Available Tablet Strength (mg):",
-                    options,
-                    index=default_index,
-                    key=f'{drug_name}_strength',
-                    help=f"Select the strength of the {drug_name} tablet you will be cutting."
-                )
+            # Set options based on drug type
+            options = [0]
+            default_index = 0
+            if drug_name == "Doxycycline":
+                options = [0, 100] # Fixed to 100mg
+                default_index = 1
+            elif drug_name == "Metronidazole":
+                options = [0, 250, 500]
+                default_index = 1 # Defaulting to 250mg 
+                
+            tablet_strength_mg = st.sidebar.selectbox(
+                "Available Tablet Strength (mg):",
+                options,
+                index=default_index,
+                key=f'{drug_name}_strength',
+                help=f"Select the strength of the {drug_name} tablet you will be cutting."
+            )
 
         # Force liquid for Panacur/Toltrazuril
         if protocol_data.get("force_liquid"):
