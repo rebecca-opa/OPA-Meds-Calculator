@@ -191,6 +191,7 @@ def calculate_meds():
     
     results_data = []
     grand_total_mg = 0 
+    grand_total_mL_sum = 0.0 # Numeric accumulator for total liquid volume
 
     # --- PROCESS EACH ANIMAL ---
     for i, weight_lbs in enumerate(weights_list):
@@ -201,6 +202,8 @@ def calculate_meds():
         if calc_type == 'Liquid (mL)':
             dose_mL_per_admin = dose_mg_per_admin / concentration_mg_per_mL
             total_mL_protocol = dose_mL_per_admin * total_doses
+            
+            grand_total_mL_sum += total_mL_protocol # Accumulate the numeric total
             
             results_data.append({
                 "Animal #": i + 1,
@@ -250,7 +253,8 @@ def calculate_meds():
     
     # --- GRAND TOTAL SUMMARY ---
     if calc_type == 'Liquid (mL)':
-        grand_total_volume = sum(r['Total mL (Protocol)'] for r in results_data)
+        # FIX: Use the numeric accumulator instead of summing formatted strings
+        grand_total_volume = grand_total_mL_sum 
         total_label = f"**Grand Total Protocol Volume ({len(weights_list)} animals)**"
         total_value = f"{grand_total_volume:.2f} mL"
         caption_text = f"Total volume of medication needed for the full {duration_days}-day protocol."
